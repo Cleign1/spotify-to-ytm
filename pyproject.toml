@@ -1,0 +1,14 @@
+[project]
+name = "ytmusic-importer"
+version = "0.1.0"
+description = "Import Spotify CSV playlists into YouTube Music"
+dependencies = [
+    "pandas",
+    "ytmusicapi"
+]
+
+[project.scripts]
+ytmusic-import = "ytmusic_importer.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ytmusic_importer*"]
