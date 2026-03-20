@@ -10,7 +10,7 @@ Import Spotify playlist CSV exports into YouTube Music from the command line.
 
 ## Overview
 
-`ytmusic-importer` is a simple CLI tool that converts a Spotify playlist export into a YouTube Music playlist. It handles CSV cleaning, track matching, and playlist creation automatically.
+`ytmusic-importer` is a simple CLI tool that converts a Spotify playlist export into a YouTube Music playlist. It handles CSV cleaning, track matching, and playlist creation automatically. You don't need a spotify API to do this.
 
 ---
 
@@ -32,10 +32,15 @@ Install from PyPI:
 pip install ytmusic-importer
 ```
 
+or use pipX:
+```bash
+pipx install ytmusic-importer
+```
+
 Or install locally:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ytmusic-importer.git
+git clone https://github.com/Cleign1/spotify-to-ytm.git
 cd ytmusic-importer
 pip install -e .
 ```
@@ -178,6 +183,8 @@ ytmusic-import raw/this_is_james_blake.csv "This is James Blake"
 
 ---
 
-## License
+## Credits
 
-MIT
+This project uses [ytmusicapi](https://github.com/sigma67/ytmusicapi), an unofficial YouTube Music API client developed by @sigma67.
+
+All YouTube Music interactions in this tool rely on that library. This project would not be possible without it.
