@@ -1,0 +1,6 @@
+__pycache__
+.venv
+browser.json
+checkpoint.json
+processed
+raw
