@@ -4,44 +4,79 @@
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Import Spotify playlist CSV exports into YouTube Music from the command line.
+Import Spotify playlists into YouTube Music without using the Spotify API.
+
+A lightweight command-line tool that reads playlist exports from Exportify and recreates them in YouTube Music using `ytmusicapi`.
 
 ---
 
-## Overview
+## Why This Exists
 
-`ytmusic-importer` is a simple CLI tool that converts a Spotify playlist export into a YouTube Music playlist. It handles CSV cleaning, track matching, and playlist creation automatically. You don't need a spotify API to do this.
+Most playlist migration services are:
+
+- Paid
+- Rate limited
+- Closed source
+- Require account linking
+
+Tools like TuneMyMusic work well, but free plans are often limited by playlist size or monthly quotas.
+
+`ytmusic-importer` takes a different approach:
+
+- Export your playlist as CSV
+- Run a local command
+- Create the playlist directly in your YouTube Music account
+
+No Spotify API keys required.
 
 ---
 
 ## Features
 
-* Batch importing for better performance
-* Resume support for large playlists
-* Automatic CSV normalization
-* Failure tracking (`failed.txt`)
-* Designed for Linux CLI workflows
+### Current
+
+- Import Exportify CSV files
+- Automatic playlist creation
+- Automatic song searching
+- Batch processing
+- Resume interrupted imports
+- Failed song reporting
+- Linux-friendly CLI workflow
+
+### Planned
+
+- Match confidence scoring
+- Interactive review mode
+- Search result caching
+- Multiple playlist imports
+- FastAPI backend
+- Web UI
+- Docker support
 
 ---
 
 ## Installation
 
-Install from PyPI:
+### PyPI
 
 ```bash
 pip install ytmusic-importer
 ```
 
-or use pipX:
+### pipx
+
 ```bash
 pipx install ytmusic-importer
 ```
 
-Or install locally:
+### Development Install
 
 ```bash
 git clone https://github.com/Cleign1/spotify-to-ytm.git
-cd ytmusic-importer
+
+cd spotify-to-ytm
+
+## use venv
 pip install -e .
 ```
 
@@ -49,142 +84,252 @@ pip install -e .
 
 ## Authentication
 
-This tool relies on `ytmusicapi`, which requires authentication via browser headers.
+This project uses `ytmusicapi`, an unofficial YouTube Music API wrapper. It authenticates using your browser session. :contentReference[oaicite:0]{index=0}
 
-Run:
+Generate a browser authentication file:
 
 ```bash
-ytmusicapi setup
+ytmusicapi browser
 ```
 
-This will generate:
+This creates:
 
-```
+```text
 browser.json
 ```
 
-Place it in your working directory or pass it via `--auth`.
+which is used to authenticate playlist operations. Browser-based authentication is documented by ytmusicapi and typically remains valid as long as the underlying browser session remains active. :contentReference[oaicite:1]{index=1}
 
 ---
 
-## Input Format
+## Exporting Spotify Playlists
 
-Export your playlist from Spotify as CSV.
+This tool is designed around Exportify.
 
-Required columns:
+1. Open Exportify
+2. Export a playlist as CSV
+3. Save the file
 
+Example:
+
+```text
+This Is James Blake.csv
 ```
-Track Name
-Artist Name(s)
-```
-
-The tool will automatically convert this into the required format.
 
 ---
 
-## Usage
-
-Basic usage:
+## Quick Start
 
 ```bash
-ytmusic-import raw/playlist.csv "My Playlist"
+ytmusic-import playlist.csv
 ```
 
-Advanced usage:
+The playlist name will automatically be derived from the filename.
+
+Example:
 
 ```bash
-ytmusic-import raw/playlist.csv "My Playlist" \
-  --auth browser.json \
-  --batch-size 50 \
-  --delay 0.5 \
+ytmusic-import "This Is James Blake.csv"
+```
+
+Creates:
+
+```text
+This Is James Blake
+```
+
+inside YouTube Music.
+
+---
+
+## How It Works
+
+```mermaid
+flowchart TD
+
+    A[Exportify CSV]
+
+    A --> B[Parse CSV]
+    B --> C[Extract Playlist Metadata]
+    C --> D[Normalize Track Data]
+
+    D --> E[Search YouTube Music]
+
+    E --> F{Match Found?}
+
+    F -->|Yes| G[Accept Match]
+    F -->|No| H[Add To Failed Report]
+
+    G --> I[Build Import Plan]
+
+    H --> I
+
+    I --> J[Dry Run Summary]
+
+    J --> K{User Confirm?}
+
+    K -->|No| L[Abort]
+
+    K -->|Yes| M[Create Playlist]
+
+    M --> N[Add Songs]
+    N --> O[Generate Report]
+
+    O --> P[Done]
+```
+
+---
+
+## CLI Usage
+
+### Basic
+
+```bash
+ytmusic-import playlist.csv
+```
+
+### Custom Playlist Name
+
+```bash
+ytmusic-import playlist.csv \
+  --playlist "Road Trip Mix"
+```
+
+### Resume Import
+
+```bash
+ytmusic-import playlist.csv \
   --resume
 ```
 
----
-
-## Arguments
-
-| Argument   | Description      |
-| ---------- | ---------------- |
-| `input`    | Path to CSV file |
-| `playlist` | Playlist name    |
-
----
-
-## Options
-
-| Option         | Default      | Description            |
-| -------------- | ------------ | ---------------------- |
-| `--auth`       | browser.json | Auth file path         |
-| `--batch-size` | 50           | Songs per batch        |
-| `--delay`      | 0.5          | Delay between requests |
-| `--resume`     | false        | Resume from checkpoint |
-
----
-
-## How it works
-
-1. Parse Spotify CSV
-2. Extract track and artist
-3. Search YouTube Music
-4. Retrieve `videoId`
-5. Add tracks to playlist
-
----
-
-## Output
-
-| File                  | Description    |
-| --------------------- | -------------- |
-| `processed_csv/*.csv` | Cleaned CSV    |
-| `checkpoint.json`     | Resume state   |
-| `failed.txt`          | Failed matches |
-
----
-
-## Notes
-
-* Large playlists can take time (~0.5s per song)
-* Matching is best-effort and not guaranteed to be perfect
-* Playlist size is practically limited (~5000 songs)
-* Uses an unofficial API
-
----
-
-## Troubleshooting
-
-**Invalid auth JSON**
+### Custom Authentication File
 
 ```bash
-ytmusicapi setup
-```
-
-**Command not found**
-
-```bash
-pip install -e .
-```
-
-**Missing columns**
-
-Ensure your CSV includes:
-
-```
-Track Name, Artist Name(s)
+ytmusic-import playlist.csv \
+  --auth browser.json
 ```
 
 ---
 
-## Example
+## Commands
+
+### Import
 
 ```bash
-ytmusic-import raw/this_is_james_blake.csv "This is James Blake"
+ytmusic-import playlist.csv
+```
+
+Import a playlist into YouTube Music.
+
+### Dry Run
+
+```bash
+ytmusic-import playlist.csv --dry-run
+```
+
+Preview the migration without creating a playlist.
+
+### Resume
+
+```bash
+ytmusic-import playlist.csv --resume
+```
+
+Continue from the previous checkpoint.
+
+---
+
+## Project Structure
+
+```text
+ytmusic-importer/
+
+├── cli.py
+│
+├── parsers/
+│   └── exportify.py
+│
+├── services/
+│   ├── search.py
+│   ├── matcher.py
+│   ├── playlist.py
+│   └── importer.py
+│
+├── models/
+│   ├── playlist.py
+│   ├── track.py
+│   └── match.py
+│
+├── reports/
+│   └── report.py
+│
+├── cache/
+│
+└── tests/
 ```
 
 ---
 
-## Credits
+## Output Files
 
-This project uses [ytmusicapi](https://github.com/sigma67/ytmusicapi), an unofficial YouTube Music API client developed by @sigma67.
+| File | Purpose |
+|--------|--------|
+| checkpoint.json | Resume state |
+| failed.txt | Unmatched songs |
+| report.json | Import summary |
+| processed_csv/*.csv | Normalized playlist data |
 
-All YouTube Music interactions in this tool rely on that library. This project would not be possible without it.
+---
+
+## Example Output
+
+```text
+Playlist: This Is James Blake
+
+Tracks Found: 197
+Tracks Missing: 3
+Match Rate: 98.5%
+
+Creating playlist...
+Adding tracks...
+
+Import complete.
+```
+
+---
+
+## Limitations
+
+- Matching is best-effort
+- Search results may occasionally select the wrong version of a song
+- Relies on an unofficial API
+- YouTube Music internal changes can occasionally break functionality
+
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+Ideas:
+
+- Better matching algorithms
+- Performance improvements
+- FastAPI endpoints
+- Documentation improvements
+- Test coverage
+
+Open an issue or submit a pull request.
+
+---
+
+## Acknowledgements
+
+This project is built on top of ytmusicapi, an unofficial Python client for YouTube Music. The library provides playlist management, search functionality, and authentication support used throughout this project.
+
+---
+
+## License
+
+MIT License.
