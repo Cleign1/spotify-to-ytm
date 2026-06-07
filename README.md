@@ -242,30 +242,56 @@ Continue from the previous checkpoint.
 ## Project Structure
 
 ```text
-ytmusic-importer/
+spotify-to-ytm/
 
-├── cli.py
+├── pyproject.toml
+├── README.md
+├── LICENSE
 │
-├── parsers/
-│   └── exportify.py
+├── ytmusic_importer/
+│   │
+│   ├── __init__.py
+│   ├── cli.py
+│   │
+│   ├── models/
+│   │   ├── track.py
+│   │   ├── playlist.py
+│   │   └── match.py
+│   │
+│   ├── parsers/
+│   │   └── exportify.py
+│   │
+│   ├── services/
+│   │   ├── search_service.py
+│   │   ├── matching_service.py
+│   │   ├── playlist_service.py
+│   │   ├── report_service.py
+│   │   └── import_service.py
+│   │
+│   ├── repositories/
+│   │   ├── cache_repository.py
+│   │   └── checkpoint_repository.py
+│   │
+│   ├── clients/
+│   │   └── ytmusic_client.py
+│   │
+│   ├── reports/
+│   │   └── writer.py
+│   │
+│   └── utils/
+│       ├── strings.py
+│       ├── files.py
+│       └── logging.py
 │
-├── services/
-│   ├── search.py
-│   ├── matcher.py
-│   ├── playlist.py
-│   └── importer.py
-│
-├── models/
-│   ├── playlist.py
-│   ├── track.py
-│   └── match.py
-│
-├── reports/
-│   └── report.py
+├── tests/
+│   ├── test_parser.py
+│   ├── test_search.py
+│   ├── test_matching.py
+│   └── test_import.py
 │
 ├── cache/
-│
-└── tests/
+├── data/
+└── examples/
 ```
 
 ---
