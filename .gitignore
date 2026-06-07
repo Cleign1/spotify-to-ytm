@@ -9,3 +9,4 @@ ytmusic_importer.egg-info
 *.csv
 *.json
 .env
+venv
